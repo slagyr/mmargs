@@ -327,10 +327,24 @@ public class ArgumentsTest
   {
     args.addSwitchOption("a", "a-option", "Option A");
 
-    args.addValueOption("b", "b-option", "value", "Option B which has a really long description that should be cutoff at 60 chars.");
+    args.addValueOption("b", "b-option", "value", "Option B which has a really long description that should be cutoff at 72 chars.");
     final String expected = "  -a, --a-option          Option A\n" +
-                            "  -b, --b-option=<value>  Option B which has a really long description that should be\n" +
-                            "                          cutoff at 60 chars.\n";
+                            "  -b, --b-option=<value>  Option B which has a really long description that should be cutoff at 72\n" +
+                            "                          chars.\n";
+
+    assertEquals(expected, args.optionsString());
+  }
+
+  @Test
+  public void extraNewlinesArePreservedInOptionsString() throws Exception
+  {
+    args.addSwitchOption("a", "a-option", "Option A");
+
+    args.addValueOption("b", "b-option", "value", "Option B\n\nThat's it");
+    final String expected = "  -a, --a-option          Option A\n" +
+                            "  -b, --b-option=<value>  Option B\n" +
+                            "                          \n" +
+                            "                          That's it\n";
 
     assertEquals(expected, args.optionsString());
   }

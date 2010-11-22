@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class Arguments
 {
-  public static final int MAX_ROW_LENGTH = 60;
+  public static final int MAX_ROW_LENGTH = 72;
 
   private String[] args;
   private int argIndex;
