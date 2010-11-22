@@ -6,7 +6,7 @@
     <property name="src" location="src"/>
     <property name="classes" location="classes"/>
     <property name="lib" location="lib"/>
-    <property name="version" value="1.1.0"/>
+    <property name="version" value="1.2.0"/>
     <property name="jarfile" location="mmargs-${version}.jar"/>
     <property name="ant.build.javac.target" value="1.5"/>
 

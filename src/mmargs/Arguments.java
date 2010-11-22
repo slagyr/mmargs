@@ -15,12 +15,17 @@ public class Arguments
 
   public void addParameter(String name, String description)
   {
-    parameters.add(new Parameter(name, description, true));
+    parameters.add(new Parameter(name, description, true, false));
   }
 
   public void addOptionalParameter(String name, String description)
   {
-    parameters.add(new Parameter(name, description, false));
+    parameters.add(new Parameter(name, description, false, false));
+  }
+
+  public void addMultiParameter(String name, String description)
+  {
+    parameters.add(new Parameter(name, description, false, true));
   }
 
   public void addSwitchOption(String shortName, String fullName, String description)
@@ -30,10 +35,21 @@ public class Arguments
 
   public void addValueOption(String shortName, String fullName, String valueDescription, String description)
   {
+    addValueOption(shortName, fullName, valueDescription, description, false);
+  }
+
+  private void addValueOption(String shortName, String fullName, String valueDescription, String description, boolean multi)
+  {
     if(shortName == null || fullName == null)
       throw new RuntimeException("Options require a shortName and fullName");
-    options.add(new Option(shortName, fullName, valueDescription, description));
+    options.add(new Option(shortName, fullName, valueDescription, description, multi));
   }
+
+  public void addMultiOption(String shortName, String fullName, String valueDescription, String description)
+  {
+    addValueOption(shortName, fullName, valueDescription, description, true);
+  }
+
 
   public Map<String, Object> parse(String... args)
   {
@@ -107,25 +123,52 @@ public class Arguments
   private LinkedList<String> parseParams(LinkedList<String> args, HashMap<String, Object> results)
   {
     LinkedList<String> leftOver = new LinkedList<String>();
-    for(Parameter parameter : parameters)
+    LinkedList<Parameter> unfilledParams = new LinkedList<Parameter>(this.parameters);
+
+    Parameter parameter = null;
+    while(!args.isEmpty())
     {
       String arg = pop(args);
-      while(arg != null && isOption(arg))
-      {
+      if(isOption(arg))
         leftOver.add(arg);
-        arg = pop(args);
-      }
-      if(arg == null)
-      {
-        if(parameter.required)
-          addError(results, "Missing parameter: " + parameter.name);
-      }
       else
-        results.put(parameter.name, arg);
+      {
+        if(unfilledParams.isEmpty())
+        {
+          if(parameter != null && parameter.multi)
+            setValue(results, parameter.name, arg, true);
+          else
+            leftOver.add(arg);
+        }
+        else
+        {
+          parameter = unfilledParams.removeFirst();
+          setValue(results, parameter.name, arg, parameter.multi);
+        }
+      }
     }
 
-    leftOver.addAll(args);
+    for(Parameter unfilledParam : unfilledParams)
+      if(unfilledParam.required)
+        addError(results, "Missing parameter: " + unfilledParam.name);
+
     return leftOver;
+  }
+
+  private void setValue(HashMap<String, Object> results, String name, String arg, boolean multi)
+  {
+    if(multi)
+    {
+      List values = (List) results.get(name);
+      if(values == null)
+      {
+        values = new LinkedList<String>();
+        results.put(name, values);
+      }
+      values.add(arg);
+    }
+    else
+      results.put(name, arg);
   }
 
   private static String pop(LinkedList<String> args)
@@ -188,14 +231,14 @@ public class Arguments
       {
         if(parser.argValue == null)
           addError(results, "Missing value for option: " + parser.argName);
-        results.put(option.fullName, parser.argValue);
+        setValue(results, option.fullName, parser.argValue, option.multi);
       }
       else
       {
         final String nextArg = args.isEmpty() ? null : args.getFirst();
         if(nextArg == null || isOption(nextArg))
           addError(results, "Missing value for option: " + parser.argName);
-        results.put(option.fullName, nextArg);
+        setValue(results, option.fullName, nextArg, option.multi);
         pop(args);
       }
     }
@@ -276,12 +319,14 @@ public class Arguments
     private String name;
     private boolean required;
     private String description;
+    private boolean multi;
 
-    public Parameter(String name, String description, boolean required)
+    public Parameter(String name, String description, boolean required, boolean multi)
     {
       this.name = name;
       this.description = description;
       this.required = required;
+      this.multi = multi;
     }
   }
 
@@ -292,13 +337,15 @@ public class Arguments
     private String valueDescription;
     private String description;
     private String head;
+    private boolean multi;
 
-    public Option(String shortName, String fullName, String valueDescription, String description)
+    public Option(String shortName, String fullName, String valueDescription, String description, boolean multi)
     {
       this.shortName = shortName;
       this.fullName = fullName;
       this.valueDescription = valueDescription;
       this.description = description;
+      this.multi = multi;
     }
 
     public boolean requiresValue()

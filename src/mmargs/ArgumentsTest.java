@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -279,6 +281,42 @@ public class ArgumentsTest
   }
 
   @Test
+  public void multiParameters() throws Exception
+  {
+    args.addMultiParameter("colors", "Any number of colors");
+
+    results = args.parse("red", "orange", "yellow");
+    assertEquals(null, results.get("*errors"));
+    assertListsEquals(list("red", "orange", "yellow"), results.get("colors"));
+
+    results = args.parse();
+    assertEquals(null, results.get("*errors"));
+    assertEquals(null, results.get("colors"));
+
+    results = args.parse("red");
+    assertEquals(null, results.get("*errors"));
+    assertListsEquals(list("red"), results.get("colors"));
+  }
+
+  @Test
+  public void multiOptions() throws Exception
+  {
+    args.addMultiOption("c", "color", "COLOR", "Some colors");
+
+    results = args.parse();
+    assertEquals(null, results.get("*errors"));
+    assertEquals(null, results.get("color"));
+
+    results = args.parse("-c", "red");
+    assertEquals(null, results.get("*errors"));
+    assertListsEquals(list("red"), results.get("color"));
+
+    results = args.parse("-c", "red", "--color", "orange", "--color=yellow");
+    assertEquals(null, results.get("*errors"));
+    assertListsEquals(list("red", "orange", "yellow"), results.get("color"));
+  }
+
+  @Test
   public void argString() throws Exception
   {
     assertEquals("", args.argString());
@@ -390,5 +428,18 @@ public class ArgumentsTest
     for(Object error : errors)
       joinedErrors += (error.toString() + ", ");
     assertEquals(joinedErrors, true, errors.contains(message));
+  }
+  
+  private void assertListsEquals(List expected, Object actualObject)
+  {
+    List actual = (List)actualObject;
+    assertEquals(expected.size(), actual.size());
+    for(int i = 0; i < expected.size(); i++)
+      assertEquals("list mismatch at index: " + i, expected.get(i), actual.get(i));
+  }
+
+  private List list(String... values)
+  {
+    return Arrays.asList(values);
   }
 }
