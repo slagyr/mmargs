@@ -6,6 +6,8 @@
     <property name="src" location="src"/>
     <property name="classes" location="classes"/>
     <property name="lib" location="lib"/>
+    <property name="version" value="1.0.0"/>
+    <property name="jarfile" location="mmargs-${version}.jar"/>
     <property name="ant.build.javac.target" value="1.5"/>
 
     <path id="classpath">
@@ -25,9 +27,9 @@
             description="Run this target any time you change code or acceptance tests. It will clean, then compile the source, run all the unit test and fintesse acceptance tests."/>
 
     <target name="jar" depends="build" description="generate the jar file">
-        <delete file="mmargs.jar"/>
+        <delete file="${jarfile}"/>
 
-        <jar jarfile="mmargs.jar" basedir="classes">
+        <jar jarfile="${jarfile}" basedir="classes">
             <include name="**/*"/>
             <exclude name="**/*Test.class"/>
             <manifest>
