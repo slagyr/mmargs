@@ -7,9 +7,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Arguments
 {
+  public static final int MAX_ROW_LENGTH = 60;
+
   private String[] args;
   private int argIndex;
   private HashMap<String, String> results;
@@ -284,13 +287,54 @@ public class Arguments
     for(int i = 0; i < col1.length; i++)
     {
       buffer.append("  ").append(col1[i]);
-      final int spaces = maxLength - col1[i].length();
-      for(int j = 0; j < spaces; j++)
-        buffer.append(" ");
-      buffer.append("  ").append(col2[i]);
+      final int remainingSpaces = maxLength - col1[i].length();
+      appendSpaces(buffer, remainingSpaces + 2);
+      LinkedList<String> lines = splitIntoLines(col2[i]);
+      buffer.append(lines.removeFirst());
       buffer.append(System.getProperty("line.separator"));
+      while(!lines.isEmpty())
+      {
+        appendSpaces(buffer, maxLength + 4);
+        buffer.append(lines.removeFirst());
+        buffer.append(System.getProperty("line.separator"));
+      }
     }
     return buffer.toString();
+  }
+
+  private static Pattern newlineRegex = Pattern.compile("\\r\\n|\\n", Pattern.MULTILINE);
+
+  private static LinkedList<String> splitIntoLines(String value)
+  {
+    final String[] lines = newlineRegex.split(value);
+    LinkedList<String> measuredLines = new LinkedList<String>();
+    for(String line : lines)
+    {
+      while(line.length() > MAX_ROW_LENGTH)
+      {
+        int splitIndex = findIndexOfSpaceBefore(MAX_ROW_LENGTH, line);
+        measuredLines.add(line.substring(0, splitIndex));
+        line = line.substring(splitIndex + 1);
+      }
+      measuredLines.add(line);
+    }
+    return measuredLines;
+  }
+
+  private static int findIndexOfSpaceBefore(int end, String line)
+  {
+    for(int i = end; i > 0; i--)
+    {
+      if(line.charAt(i) == ' ')
+        return i;
+    }
+    return MAX_ROW_LENGTH;
+  }
+
+  private static void appendSpaces(StringBuffer buffer, int spaces)
+  {
+    for(int j = 0; j < spaces; j++)
+      buffer.append(" ");
   }
 
   public static class Parameter

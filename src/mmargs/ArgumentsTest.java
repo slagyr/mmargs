@@ -309,6 +309,32 @@ public class ArgumentsTest
     assertEquals(expected, args.optionsString());
   }
 
+  @Test
+  public void multilineOptionsAreAlignedProperly() throws Exception
+  {
+    args.addSwitchOption("a", "a-option", "Option A");
+
+    args.addValueOption("b", "b-option", "value", "Option B\nmore info on b option");
+    final String expected = "  -a, --a-option          Option A\n" +
+                            "  -b, --b-option=<value>  Option B\n" +
+                            "                          more info on b option\n";
+
+    assertEquals(expected, args.optionsString());
+  }
+
+  @Test
+  public void longOptionDescriptionsAreSplitIntoMultipleLines() throws Exception
+  {
+    args.addSwitchOption("a", "a-option", "Option A");
+
+    args.addValueOption("b", "b-option", "value", "Option B which has a really long description that should be cutoff at 60 chars.");
+    final String expected = "  -a, --a-option          Option A\n" +
+                            "  -b, --b-option=<value>  Option B which has a really long description that should be\n" +
+                            "                          cutoff at 60 chars.\n";
+
+    assertEquals(expected, args.optionsString());
+  }
+
   private void checkOptionError(String message, String shortName, String fullName, String description)
   {
     try
