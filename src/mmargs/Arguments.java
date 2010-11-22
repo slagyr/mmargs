@@ -3,24 +3,15 @@
 
 package mmargs;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Arguments
 {
   public static final int MAX_ROW_LENGTH = 72;
 
-  private String[] args;
-  private int argIndex;
-  private HashMap<String, String> results;
   private List<Parameter> parameters = new LinkedList<Parameter>();
   private List<Option> options = new LinkedList<Option>();
-  private String message;
-  private boolean success;
-
 
   public void addParameter(String name, String description)
   {
@@ -40,25 +31,18 @@ public class Arguments
   public void addValueOption(String shortName, String fullName, String valueDescription, String description)
   {
     if(shortName == null || fullName == null)
-      throw new ArgumentException("Options require a shortName and fullName");
+      throw new RuntimeException("Options require a shortName and fullName");
     options.add(new Option(shortName, fullName, valueDescription, description));
   }
 
-  public Map<String, String> parse(String... args)
+  public Map<String, Object> parse(String... args)
   {
-    this.args = args;
-    reset();
-    try
-    {
-      parseParameters();
-      parseArgs();
-      success = true;
-      message = "Arguments parsed successfully";
-    }
-    catch(ArgumentException e)
-    {
-      message = e.getMessage();
-    }
+    HashMap<String, Object> results = new HashMap<String, Object>();
+    LinkedList<String> params = parseOptions(args, results);
+    LinkedList<String> leftOver = parseParams(params, results);
+    processLeftOver(leftOver, results);
+    if(leftOver.size() > 0)
+      results.put("*leftover", leftOver);
 
     return results;
   }
@@ -82,7 +66,6 @@ public class Arguments
 
     return buffer.toString();
   }
-
 
   public String parametersString()
   {
@@ -111,16 +94,6 @@ public class Arguments
     return tabularize(heads, descriptions);
   }
 
-  public boolean success()
-  {
-    return success;
-  }
-
-  public String getMessage()
-  {
-    return message;
-  }
-
   public Option findOption(String name)
   {
     for(Option option : options)
@@ -131,147 +104,108 @@ public class Arguments
     return null;
   }
 
-  public int parameterCount()
+  private LinkedList<String> parseParams(LinkedList<String> args, HashMap<String, Object> results)
   {
-    return parameters.size();
-  }
-
-  public boolean hasParameters()
-  {
-    return parameters.size() > 0;
-  }
-
-  public boolean hasParameter(String name)
-  {
+    LinkedList<String> leftOver = new LinkedList<String>();
     for(Parameter parameter : parameters)
     {
-      if(name.equals(parameter.name))
-        return true;
+      String arg = pop(args);
+      while(arg != null && isOption(arg))
+      {
+        leftOver.add(arg);
+        arg = pop(args);
+      }
+      if(arg == null)
+      {
+        if(parameter.required)
+          addError(results, "Missing parameter: " + parameter.name);
+      }
+      else
+        results.put(parameter.name, arg);
     }
-    return false;
-  }
 
-  public String[] leftOverArgs()
-  {
-    int leftOverCount = args.length - argIndex;
-    String[] leftOver = new String[leftOverCount];
-    System.arraycopy(args, argIndex, leftOver, 0, leftOverCount);
+    leftOver.addAll(args);
     return leftOver;
   }
 
-  public boolean hasOptions()
+  private static String pop(LinkedList<String> args)
   {
-    return options.size() > 0;
+    if(args.isEmpty())
+      return null;
+    else
+      return args.removeFirst();
   }
 
-  private void reset()
+  private LinkedList<String> parseOptions(String[] argArray, HashMap<String, Object> results)
   {
-    argIndex = 0;
-    results = new HashMap<String, String>();
-    success = false;
-    message = null;
-  }
-
-  private void parseArgs()
-  {
-    while(hasMoreArgs())
+    LinkedList<String> args = new LinkedList<String>(Arrays.asList(argArray));
+    LinkedList<String> leftOver = new LinkedList<String>();
+    while(!args.isEmpty())
     {
-      String arg = peek(1);
-      if(!isOption(arg))
-        throw new ArgumentException("Unexpected parameter: " + arg);
-      parseOption();
-    }
-  }
-
-  private void parseParameters()
-  {
-    for(Parameter parameter : parameters)
-    {
-      boolean found = false;
-      while(!found)
+      String arg = pop(args);
+      if(isOption(arg))
       {
-        String arg = peek(1);
-        if(arg == null)
-        {
-          if(parameter.required)
-            throw new ArgumentException("Missing parameter: " + parameter.name);
-          else
-            found = true;
-        }
+        OptionParser parser = new OptionParser(arg);
+        if(findOption(parser.argName) != null)
+          parseOption(parser, args, results);
         else
-        {
-          if(isOption(arg))
-            parseOption();
-          else
-          {
-            results.put(parameter.name, nextArg());
-            found = true;
-          }
-        }
+          leftOver.add(arg);
       }
+      else
+        leftOver.add(arg);
+    }
+    return leftOver;
+  }
+
+  private void processLeftOver(LinkedList<String> leftOver, HashMap<String, Object> results)
+  {
+    for(String arg : leftOver)
+    {
+      if(isOption(arg))
+        addError(results, "Unrecognized option: " + arg);
+      else
+        addError(results, "Unexpected parameter: " + arg);
     }
   }
 
-  private void parseOption()
+  private void addError(HashMap<String, Object> results, Object message)
   {
-    final String arg = peek(1);
-    OptionParser parser = new OptionParser(arg);
+    LinkedList errors = (LinkedList) results.get("*errors");
+    if(errors == null)
+    {
+      errors = new LinkedList<String>();
+      results.put("*errors", errors);
+    }
+    errors.add(message);
+  }
+
+  private void parseOption(OptionParser parser, LinkedList<String> args, HashMap<String, Object> results)
+  {
     Option option = findOption(parser.argName);
-
-    if(option == null)
-      throw new ArgumentException("Unrecognized option: " + arg);
-
     if(option.requiresValue())
     {
       if(parser.usingEquals)
       {
         if(parser.argValue == null)
-          throw new ArgumentException("Missing value for option: " + parser.argName);
+          addError(results, "Missing value for option: " + parser.argName);
         results.put(option.fullName, parser.argValue);
-        nextArg();
       }
       else
       {
-        final String nextArg = peek(2);
+        final String nextArg = args.isEmpty() ? null : args.getFirst();
         if(nextArg == null || isOption(nextArg))
-          throw new ArgumentException("Missing value for option: " + parser.argName);
+          addError(results, "Missing value for option: " + parser.argName);
         results.put(option.fullName, nextArg);
-        nextArg();
-        nextArg();
+        pop(args);
       }
     }
     else
-    {
       results.put(option.fullName, "on");
-      nextArg();
-    }
   }
 
   private boolean isOption(String arg)
   {
     return arg.startsWith("-");
-  }
-
-  private String nextArg()
-  {
-    if(hasMoreArgs())
-      return args[argIndex++];
-    else
-      return null;
-  }
-
-  private String peek(int delta)
-  {
-    final int peekIndex = argIndex + delta - 1;
-    if(peekIndex < args.length)
-      return args[peekIndex];
-    else
-      return null;
-  }
-
-  private boolean hasMoreArgs()
-  {
-    return argIndex < args.length;
   }
 
   public static String tabularize(String[] col1, String[] col2)
@@ -290,12 +224,12 @@ public class Arguments
       final int remainingSpaces = maxLength - col1[i].length();
       appendSpaces(buffer, remainingSpaces + 2);
       LinkedList<String> lines = splitIntoLines(col2[i]);
-      buffer.append(lines.removeFirst());
+      buffer.append(pop(lines));
       buffer.append(System.getProperty("line.separator"));
       while(!lines.isEmpty())
       {
         appendSpaces(buffer, maxLength + 4);
-        buffer.append(lines.removeFirst());
+        buffer.append(pop(lines));
         buffer.append(System.getProperty("line.separator"));
       }
     }
@@ -382,26 +316,6 @@ public class Arguments
       }
       return head;
     }
-
-    public String getShortName()
-    {
-      return shortName;
-    }
-
-    public String getFullName()
-    {
-      return fullName;
-    }
-
-    public String getValueDescription()
-    {
-      return valueDescription;
-    }
-
-    public String getDescription()
-    {
-      return description;
-    }
   }
 
   private static class OptionParser
@@ -439,15 +353,6 @@ public class Arguments
         usingFullName = false;
         argName = arg.substring(1);
       }
-    }
-
-  }
-
-  public static class ArgumentException extends RuntimeException
-  {
-    public ArgumentException(String message)
-    {
-      super(message);
     }
   }
 }

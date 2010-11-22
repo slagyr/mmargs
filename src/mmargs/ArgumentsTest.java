@@ -8,12 +8,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.Map;
 
 public class ArgumentsTest
 {
   private Arguments args;
-  private Map<String, String> results;
+  private Map<String, Object> results;
 
   @Before
   public void setUp() throws Exception
@@ -84,11 +85,11 @@ public class ArgumentsTest
 
     results = args.parse();
     assertEquals(null, results.get("foo"));
-    assertEquals(true, args.success());
+    assertEquals(null, results.get("*errors"));
 
     results = args.parse("fizz");
     assertEquals("fizz", results.get("foo"));
-    assertEquals(true, args.success());
+    assertEquals(null, results.get("*errors"));
   }
 
   @Test
@@ -228,19 +229,19 @@ public class ArgumentsTest
   @Test
   public void remainingArgs() throws Exception
   {
-    args.parse("foo");
-    assertArrayEquals(new String[] {"foo"}, args.leftOverArgs());
+    results = args.parse("foo");
+    assertArrayEquals(new String[] {"foo"}, ((List)results.get("*leftover")).toArray());
 
     args.addParameter("param", "Some Description");
-    args.parse("foo", "bar");
-    assertArrayEquals(new String[] {"bar"}, args.leftOverArgs());
+    results = args.parse("foo", "bar");
+    assertArrayEquals(new String[] {"bar"}, ((List)results.get("*leftover")).toArray());
 
     args.addSwitchOption("a", "a-option", "Option A");
-    args.parse("-a", "foo", "bar");
-    assertArrayEquals(new String[] {"bar"}, args.leftOverArgs());
+    results = args.parse("-a", "foo", "bar");
+    assertArrayEquals(new String[] {"bar"}, ((List)results.get("*leftover")).toArray());
 
-    args.parse("-z", "foo", "bar");
-    assertArrayEquals(new String[] {"-z", "foo", "bar"}, args.leftOverArgs());
+    results = args.parse("-z", "foo", "bar");
+    assertArrayEquals(new String[] {"-z", "bar"}, ((List)results.get("*leftover")).toArray());
   }
 
   @Test
@@ -249,14 +250,32 @@ public class ArgumentsTest
     args.addParameter("param", "Some Description");
     args.addValueOption("a", "a-option", "value", "Option A");
 
-    args.parse("-z");
-    assertArrayEquals(new String[] {"-z"}, args.leftOverArgs());
+    results = args.parse("-z");
+    assertArrayEquals(new String[] {"-z"}, ((List)results.get("*leftover")).toArray());
 
-    args.parse("-z", "foo", "bar");
-    assertArrayEquals(new String[] {"-z", "foo", "bar"}, args.leftOverArgs());
+    results = args.parse("-z", "foo", "bar");
+    assertArrayEquals(new String[] {"-z", "bar"}, ((List)results.get("*leftover")).toArray());
 
-    args.parse("-a", "foo", "bar", "fizz");
-    assertArrayEquals(new String[] {"fizz"}, args.leftOverArgs());
+    results = args.parse("-a", "foo", "bar", "fizz");
+    assertArrayEquals(new String[] {"fizz"}, ((List)results.get("*leftover")).toArray());
+  }
+
+  @Test
+  public void canParseOptionsMixedInWithParameters() throws Exception
+  {
+    args.addParameter("param1", "Some Description");
+    args.addParameter("param2", "Some Description");
+    args.addSwitchOption("a", "a-switch", "Switch A");
+    args.addValueOption("b", "b-option", "B", "Option B");
+    args.addValueOption("c", "c-option", "C", "Option C");
+
+    results = args.parse("-a", "one", "--b-option=two", "three", "--c-option", "four", "five");
+
+    assertEquals("on", results.get("a-switch"));
+    assertEquals("one", results.get("param1"));
+    assertEquals("two", results.get("b-option"));
+    assertEquals("three", results.get("param2"));
+    assertEquals("four", results.get("c-option"));
   }
 
   @Test
@@ -356,7 +375,7 @@ public class ArgumentsTest
       args.addSwitchOption(shortName, fullName, description);
       fail("should throw exception");
     }
-    catch(Arguments.ArgumentException e)
+    catch(RuntimeException e)
     {
       assertEquals(message, e.getMessage());
     }
@@ -365,7 +384,11 @@ public class ArgumentsTest
   private void checkParseError(String message, String... arguments)
   {
     results = args.parse(arguments);
-    assertEquals(false, args.success());
-    assertEquals(message, args.getMessage());
+    final List errors = (List)results.get("*errors");
+    assertNotNull(errors);
+    String joinedErrors = "";
+    for(Object error : errors)
+      joinedErrors += (error.toString() + ", ");
+    assertEquals(joinedErrors, true, errors.contains(message));
   }
 }
