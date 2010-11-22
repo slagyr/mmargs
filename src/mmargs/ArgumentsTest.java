@@ -329,6 +329,12 @@ public class ArgumentsTest
 
     args.addParameter("another-param", "Some Description");
     assertEquals("[options] <param> <another-param>", args.argString());
+
+    args.addOptionalParameter("param3", "Parameter 3");
+    assertEquals("[options] <param> <another-param> [param3]", args.argString());
+
+    args.addMultiParameter("param4", "Parameter 4");
+    assertEquals("[options] <param> <another-param> [param3] [param4*]", args.argString());
   }
 
   @Test
@@ -360,9 +366,15 @@ public class ArgumentsTest
     assertEquals("  -a, --a-option  Option A\n", args.optionsString());
 
     args.addValueOption("b", "b-option", "value", "Option B");
-    final String expected = "  -a, --a-option          Option A\n" +
-                            "  -b, --b-option=<value>  Option B\n";
+    String expected = "  -a, --a-option          Option A\n" +
+                      "  -b, --b-option=<value>  Option B\n";
 
+    assertEquals(expected, args.optionsString());
+
+    args.addMultiOption("c", "c-option", "value", "Option C");
+    expected = "  -a, --a-option          Option A\n" +
+               "  -b, --b-option=<value>  Option B\n" +
+               "  -c, --c-option=<value>  Option C\n";
     assertEquals(expected, args.optionsString());
   }
 

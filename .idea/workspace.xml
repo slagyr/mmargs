@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="d5b7b802-c6ec-43f9-8484-faa926ea9fc3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mmargs/Arguments.java" afterPath="$PROJECT_DIR$/src/mmargs/Arguments.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.xml" afterPath="$PROJECT_DIR$/build.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mmargs/ArgumentsTest.java" afterPath="$PROJECT_DIR$/src/mmargs/ArgumentsTest.java" />
     </list>
@@ -65,10 +64,10 @@
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Arguments.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Arguments.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/mmargs/Arguments.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="239" column="75" selection-start="6874" selection-end="6874" vertical-scroll-proportion="-13.269231">
+            <state line="79" column="83" selection-start="2588" selection-end="2588" vertical-scroll-proportion="0.59379846">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -79,7 +78,7 @@
       <file leaf-file-name="ArgumentsTest.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/mmargs/ArgumentsTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="299" column="10" selection-start="9158" selection-end="9158" vertical-scroll-proportion="0.0">
+            <state line="324" column="37" selection-start="9944" selection-end="9944" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -87,10 +86,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.xml" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="build.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/build.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="39" selection-start="276" selection-end="276" vertical-scroll-proportion="0.14883721">
+            <state line="23" column="167" selection-start="741" selection-end="741" vertical-scroll-proportion="-2.1923077">
               <folding />
             </state>
           </provider>
@@ -116,9 +115,9 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/LICENSE" />
+        <option value="$PROJECT_DIR$/build.xml" />
         <option value="$PROJECT_DIR$/src/mmargs/ArgumentsTest.java" />
         <option value="$PROJECT_DIR$/src/mmargs/Arguments.java" />
-        <option value="$PROJECT_DIR$/build.xml" />
       </list>
     </option>
   </component>
@@ -274,6 +273,34 @@
       <option name="PACKAGE_NAME" value="mmargs" />
       <option name="MAIN_CLASS_NAME" value="mmargs.ArgumentsTest" />
       <option name="METHOD_NAME" value="canParseOptionsMixedInWithParameters" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="ArgumentsTest.optionsString" type="JUnit" factoryName="JUnit" temporary="true">
+      <extension name="coverage" enabled="false" merge="false" runner="emma">
+        <pattern>
+          <option name="PATTERN" value="mmargs.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <extension name="snapshooter" />
+      <module name="Mmargs" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="mmargs" />
+      <option name="MAIN_CLASS_NAME" value="mmargs.ArgumentsTest" />
+      <option name="METHOD_NAME" value="optionsString" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" />
       <option name="PARAMETERS" />
@@ -448,9 +475,10 @@
         <option name="Maven.BeforeRunTask" enabled="false" />
       </method>
     </configuration>
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="JUnit.ArgumentsTest" />
       <item index="1" class="java.lang.String" itemvalue="JUnit.ArgumentsTest.canParseOptionsMixedInWithParameters" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.ArgumentsTest.optionsString" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -566,28 +594,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/mmargs/Arguments.java">
+    <entry file="file://$PROJECT_DIR$/build.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="239" column="75" selection-start="6874" selection-end="6874" vertical-scroll-proportion="-13.269231">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="23" column="167" selection-start="741" selection-end="741" vertical-scroll-proportion="-2.1923077">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/mmargs/ArgumentsTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="299" column="10" selection-start="9158" selection-end="9158" vertical-scroll-proportion="0.0">
+        <state line="324" column="37" selection-start="9944" selection-end="9944" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build.xml">
+    <entry file="file://$PROJECT_DIR$/src/mmargs/Arguments.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="39" selection-start="276" selection-end="276" vertical-scroll-proportion="0.14883721">
-          <folding />
+        <state line="79" column="83" selection-start="2588" selection-end="2588" vertical-scroll-proportion="0.59379846">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

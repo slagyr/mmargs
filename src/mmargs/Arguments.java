@@ -77,7 +77,7 @@ public class Arguments
       if(parameter.required)
         buffer.append("<").append(parameter.name).append(">");
       else
-        buffer.append("[").append(parameter.name).append("]");
+        buffer.append("[").append(parameter.name).append(parameter.multi ? "*" : "").append("]");
     }
 
     return buffer.toString();
